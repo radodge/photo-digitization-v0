@@ -15,7 +15,7 @@ From this folder in PowerShell:
 
 ```powershell
 python -m venv .venv
-. .venv/Scripts/Activate.ps1
+.venv/Scripts/Activate.ps1
 pip install -U pip
 pip install -r requirements.txt
 ```

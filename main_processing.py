@@ -5,8 +5,8 @@ from queue import Queue
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from legacy_processing_utils import *
-from legacy_gui_utils import *
+from processing_utils import *
+from gui_utils import *
 
 class CombinedPhoto:
     """

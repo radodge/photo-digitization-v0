@@ -1,21 +1,28 @@
-> Version 1 of the application is in active development in a private repository to safeguard intellectual property. This folder contains a legacy v0 prototype suitable for demos.
-# UNDER CONSTRUCTION
-## Legacy v0 Demo
+# Photo Digitization Application v0 - Legacy Demo
+> *Version 1 of the application is in active development. The codebase lives in a private repository to safeguard intellectual property.*
+## Overview
+This repository contains a legacy prototype of my photo 'digitization' application. Follow the setup guide if you'd like to try the application for yourself.
 
-Run a quick, self-contained demo of the legacy photo digitization GUI.
 
+## Usage Guide
 ### Prerequisites
+- Python 3.10+
+### Step 1 - Clone the repository
+Navigate to any folder in your system and clone the repository.
+```bash
+git clone https://github.com/radodge/photo-digitization-v0.git
+cd photo-digitization-v0
+```
 
-- Python 3.10+ (Windows recommended)
-
-### Setup
+### Step 2 - Create a virtual environment
+This step is done to protect your system Python environment. Python packages installed by my setup script will be installed to `~/.venv/Lib/site-packages` instead of `C:/Program Files/Python313/Lib/site-packages`.
 
 From this folder in PowerShell:
 
 ```powershell
-python -m venv .venv
-.venv/Scripts/Activate.ps1
-python -m pip install --upgrade pip
+python -m venv .venv                # Creates a virtual environment
+.venv/Scripts/Activate.ps1          # Activates the virtual environment
+python -m pip install --upgrade pip # Upgrades venv's package installer
 pip install -r requirements.txt
 ```
 

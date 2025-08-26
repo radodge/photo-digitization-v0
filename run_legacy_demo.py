@@ -8,7 +8,7 @@ Usage:
   python run_legacy_demo.py
 """
 
-from main_processing import main
+from app.main_processing import main
 
 if __name__ == "__main__":
     main()

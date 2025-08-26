@@ -1450,7 +1450,8 @@ class ImageEditorGUI:
             filename (str|None): Either a basename in the sample folder or an absolute path.
         """
         app_dir = os.path.dirname(os.path.abspath(__file__))
-        ingest_folder = os.path.join(app_dir, "Ingest")
+        repo_dir = os.path.dirname(app_dir)
+        ingest_folder = os.path.join(repo_dir, "Ingest")
         os.makedirs(ingest_folder, exist_ok=True)
 
         allowed_exts = {".jpg", ".jpeg", ".png", ".tif", ".tiff", ".bmp", ".heic", ".webp"}
@@ -1507,9 +1508,10 @@ class ImageEditorGUI:
     def _get_sample_photos_dir(self):
         """Return the preferred sample photos directory, checking Ingest/Sample Photos then Sample Photos."""
         app_dir = os.path.dirname(os.path.abspath(__file__))
+        repo_dir = os.path.dirname(app_dir)
         candidates = [
-            os.path.join(app_dir, "Ingest", "Sample Photos"),
-            os.path.join(app_dir, "Sample Photos"),
+            os.path.join(repo_dir, "Ingest", "Sample Photos"),
+            os.path.join(repo_dir, "Sample Photos"),
         ]
         for path in candidates:
             if os.path.isdir(path):

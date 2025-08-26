@@ -1,7 +1,8 @@
 Processed Photos/
-# Ignore files directly in Ingest root, but keep subfolders and Sample Photos
+Debug Output/
+# Ignore files directly in Ingest root, but keep Sample Photos
 Ingest/*
-!Ingest/*/
+# !Ingest/*/
 !Ingest/Sample Photos/**
 
 # Byte-compiled / optimized / DLL files

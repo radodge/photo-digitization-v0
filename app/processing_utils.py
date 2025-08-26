@@ -57,37 +57,25 @@ class DebugData:
         self.intermediate_outputs.clear()
         self.plot_data.clear()
 
-def load_image_as_numpy_array(file_path):
+def load_image_as_numpy_array(file_path: str) -> np.ndarray | None:
     """
-    Loads an image file and converts it to a NumPy array.
-
-    Uses OpenCV (cv2.imread) for all formats except HEIC.
-    HEIC files are loaded using pillow-heif and converted from RGB to BGR.
-
-    Args:
-        file_path (str): Path to the image file.
-
-    Returns:
-        np.ndarray: BGR image as a NumPy array, or None if an error occurs.
+    General-purpose image loader. Supports HEIC and other formats.
+    Converts all images to OpenCV-style BGR format.
     """
     try:
-        # HEIC Handling (Uses Pillow-HEIF, but converts from RGB to BGR)
-        if file_path.lower().endswith(".heic"):
-            heif_image = pillow_heif.open_heif(file_path)
-            img = Image.frombytes(heif_image.mode, heif_image.size, heif_image.data)
-            img_array = np.array(img)  # This is in RGB format
-
-            # Convert from RGB to BGR to match OpenCV's default format
-            img_array = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
-
+        if file_path.lower().endswith((".heic", ".heif")):
+            heif_image = pillow_heif.open_heif(
+                fp=file_path,
+                convert_hdr_to_8bit=False,
+                bgr_mode=True)
+            img_array = np.asarray(heif_image)
         else:
-            # Load image using OpenCV (BGR format by default)
             img_array = cv2.imread(file_path, cv2.IMREAD_UNCHANGED)
 
         if img_array is None:
-            raise RuntimeError(f"Failed to load {file_path} using OpenCV.")
+            raise RuntimeError(f"Failed to load {file_path}.")
 
-        return img_array  # Return image in BGR format
+        return img_array
 
     except Exception as e:
         print(f"Failed to load image file {file_path}: {e}")
@@ -909,8 +897,8 @@ def inject_metadata(file_path, exif_date, description):
         exe_name = "exiftool.exe" if os.name == "nt" else "exiftool"
 
         # 2) Bundled inside repo alongside this script
-        repo_root = os.path.dirname(os.path.abspath(__file__))
-        bundled = os.path.join(repo_root, "exiftool", exe_name)
+        app_root = os.path.dirname(os.path.abspath(__file__))
+        bundled = os.path.join(app_root, "exiftool", exe_name)
         if os.path.exists(bundled):
             return bundled
 

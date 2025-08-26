@@ -5,8 +5,8 @@ from queue import Queue
 import threading
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from processing_utils import *
-from gui_utils import *
+from app.processing_utils import *
+from app.gui_utils import *
 
 class CombinedPhoto:
     """
@@ -401,15 +401,17 @@ def main():
         "Display_Mode": "windowed_fullscreen"     # fullscreen, windowed_fullscreen, or None
     }
 
+    # App files live in 'app', but user data folders live at repo root
     application_root = os.path.dirname(os.path.abspath(__file__))
-    output_base_folder = os.path.abspath(os.path.join(application_root, "Processed Photos"))
-    ingest_folder = os.path.join(application_root, "Ingest")
+    repository_root = os.path.dirname(application_root)
+    output_base_folder = os.path.abspath(os.path.join(repository_root, "Processed Photos"))
+    ingest_folder = os.path.join(repository_root, "Ingest")
 
     os.makedirs(output_base_folder, exist_ok=True)
     os.makedirs(ingest_folder, exist_ok=True)
 
     if DebugMode:
-        debug_output_folder = os.path.join(application_root, "Debug Output")
+        debug_output_folder = os.path.join(repository_root, "Debug Output")
         os.makedirs(debug_output_folder, exist_ok=True)
         processing_config["Debug_Output_Path"] = debug_output_folder
 

@@ -5,6 +5,9 @@ Ingest/*
 # !Ingest/*/
 !Ingest/Sample Photos/**
 
+# TEMPORARY
+*.whl
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

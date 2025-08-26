@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photo-digitizer-legacy"
+version = "0.1.0"
+authors = [
+    {name = "Reece Dodge", email = "dodger1846@icloud.com"}
+]
+description = "An app for processing scans produced by a flatbed scanner."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy",
+    "pillow",
+    "pillow-heif",
+    "scipy",
+    "watchdog",
+    "matplotlib",
+]
+
+[project.optional-dependencies]
+cpu = ["opencv-python"]
+gpu = [
+    "cuda-toolkit[all]",
+    "nvidia-cudnn-cu13",
+    "opencv-contrib-python-rolling@file:./opencv_contrib_python_rolling-4.13.0.20250812-cp37-abi3-win_amd64.whl"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app", "app.*"]
+exclude = [
+    "Ingest*",
+    ".venv*",
+    "Corner Detection Testing*",
+    "Debug Output*",
+    "Processed Photos*",
+    "Raw Scans*",
+]
+
+[project.scripts]
+run_app = "app.main_processing:main"

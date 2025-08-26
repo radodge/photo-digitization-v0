@@ -364,7 +364,7 @@ def main():
 
     processing_config = {
         "Debug_Mode": DebugMode,
-        "CUDA_Enabled": True,              # Enable CUDA acceleration (if available)
+        "CUDA_Enabled": False,              # Enable CUDA acceleration (if available)
         "Max_Scanned_Photos": 4,
         "Min_Crop_Margin": 10,              # Crop margin for 0° skew
         "Crop_Margin_Factor": 8,            # Scaling factor to achieve 50 pixels at 5° skew

@@ -1,5 +1,5 @@
 > Version 1 of the application is in active development in a private repository to safeguard intellectual property. This folder contains a legacy v0 prototype suitable for demos.
-
+# UNDER CONSTRUCTION
 ## Legacy v0 Demo
 
 Run a quick, self-contained demo of the legacy photo digitization GUI.
@@ -7,7 +7,6 @@ Run a quick, self-contained demo of the legacy photo digitization GUI.
 ### Prerequisites
 
 - Python 3.10+ (Windows recommended)
-- Optional: ExifTool on PATH for metadata injection (https://exiftool.org/)
 
 ### Setup
 
@@ -16,7 +15,7 @@ From this folder in PowerShell:
 ```powershell
 python -m venv .venv
 .venv/Scripts/Activate.ps1
-pip install -U pip
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 

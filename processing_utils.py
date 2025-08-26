@@ -893,9 +893,40 @@ def inject_metadata(file_path, exif_date, description):
         exif_date (str): Date in EXIF format (YYYY:MM:DD HH:MM:SS).
         description (str): Description to be added to the metadata.
     """
+    def _resolve_exiftool_path():
+        """Resolve the exiftool executable path with this priority:
+        1) EXIFTOOL_PATH env var (if set)
+        2) Bundled repo path: <repo_root>/exiftool/exiftool(.exe)
+        3) User home: ~/exiftool/exiftool(.exe)
+        4) Fallback to 'exiftool' on PATH
+        """
+        # 1) Environment variable override
+        env_path = os.environ.get("EXIFTOOL_PATH")
+        if env_path and os.path.exists(env_path):
+            return env_path
+
+        # Determine platform-specific executable name
+        exe_name = "exiftool.exe" if os.name == "nt" else "exiftool"
+
+        # 2) Bundled inside repo alongside this script
+        repo_root = os.path.dirname(os.path.abspath(__file__))
+        bundled = os.path.join(repo_root, "exiftool", exe_name)
+        if os.path.exists(bundled):
+            return bundled
+
+        # 3) In user's home directory under ~/exiftool
+        home_dir = os.path.expanduser("~")
+        home_candidate = os.path.join(home_dir, "exiftool", exe_name)
+        if os.path.exists(home_candidate):
+            return home_candidate
+
+        # 4) Fallback to system PATH
+        return "exiftool"
+
     try:
+        exiftool_path = _resolve_exiftool_path()
         cmd = [
-            "exiftool",
+            exiftool_path,
             "-overwrite_original",
             f"-AllDates={exif_date}",
             f"-XMP:Description={description}",
@@ -909,8 +940,8 @@ def inject_metadata(file_path, exif_date, description):
     except subprocess.CalledProcessError as e:
         print(f"Error injecting metadata into {file_path}: {e}")
     except FileNotFoundError:
-        # exiftool is not installed or not on PATH; continue without metadata
-        print("ExifTool not found on PATH; skipping metadata injection.")
+        # exiftool is not installed or not found at the resolved path; continue without metadata
+        print("ExifTool not found; skipping metadata injection.")
 
 def save_and_inject_metadata(photo, output_base_folder, base_name, part_number, exif_date, description, year, saving_config):
     """

@@ -10,7 +10,7 @@ authors = [
 ]
 description = "An app for processing scans produced by a flatbed scanner."
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "numpy",
     "pillow",

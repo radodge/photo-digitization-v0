@@ -1508,7 +1508,9 @@ class ImageEditorGUI:
     def _get_sample_photos_dir(self):
         """Return the preferred sample photos directory, checking Ingest/Sample Photos then Sample Photos."""
         app_dir = os.path.dirname(os.path.abspath(__file__))
+        print(f"App Directory: {app_dir}")
         repo_dir = os.path.dirname(app_dir)
+        print(f"Repo Directory: {repo_dir}")
         candidates = [
             os.path.join(repo_dir, "Ingest", "Sample Photos"),
             os.path.join(repo_dir, "Sample Photos"),

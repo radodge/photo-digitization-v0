@@ -1,6 +1,0 @@
-numpy
-pillow
-pillow-heif
-scipy
-matplotlib
-watchdog

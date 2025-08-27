@@ -21,6 +21,10 @@ VENV = ROOT / ".venv"
 REQS = ROOT / "requirements.txt"
 
 def venv_python(venv_dir: Path) -> Path:
+    """
+    Return the path to the Python executable inside the given venv directory.
+    Determines the correct subpath based on the current OS.
+    """
     return venv_dir / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
 
 def get_nvidia_drivers() -> list[str]:
@@ -52,12 +56,15 @@ def get_nvidia_drivers() -> list[str]:
             if m:
                 versions.add(m.group(0))
         if versions:
-            return sorted(versions)
+            sorted_versions = sorted(versions)
+            print(f"Detected NVIDIA driver version(s): {', '.join(sorted_versions)}")
+            return sorted_versions
     except Exception:
         pass
 
     # Fallback: parse default nvidia-smi summary output
     try:
+        print("Warning: falling back to less reliable nvidia-smi parsing", file=sys.stderr)
         out = subprocess.check_output([smi], text=True, stderr=subprocess.DEVNULL, timeout=5)
         for m in re.findall(r"Driver Version:\s*([0-9.]+)", out):
             versions.add(m)
@@ -80,10 +87,14 @@ def _has_modern_nvidia(min_branch: int = 580) -> bool:
 def install_runtime_deps_with_extras(py_exe: str) -> None:
     extra = "gpu" if _has_modern_nvidia(580) else "cpu"
     try:
-        subprocess.check_call([py_exe, "-m", "pip", "install", f".[{extra}]"])
+        subprocess.check_call([py_exe, "-m", "pip", "install", "--editable", f".[{extra}]"])
+        if extra == "gpu":
+            subprocess.check_call([py_exe, "-m", "pip", "install", "https://github.com/cudawarped/opencv-python-cuda-wheels/releases/download/4.13.0.20250811/opencv_contrib_python_rolling-4.13.0.20250812-cp37-abi3-win_amd64.whl"])
+            _install_sitecustomize(py_exe)
+
     except subprocess.CalledProcessError:
         # Fallback to cpu extras
-        subprocess.check_call([py_exe, "-m", "pip", "install", ".[cpu]"])
+        subprocess.check_call([py_exe, "-m", "pip", "install", "--editable", ".[cpu]"])
 
 def _venv_site_packages(py_exe: str) -> Path:
     """Return the site-packages directory for the given Python executable."""
@@ -116,6 +127,11 @@ def ensure_bootstrapped():
     exists = VENV.exists()
     is_venv = (VENV / "pyvenv.cfg").exists()
 
+    if exists and is_venv:
+        print(f"Using existing virtual environment at {VENV}")
+        py_exe = venv_python(VENV)
+        return 0, str(py_exe)
+
     if exists and not is_venv:
         print(f"Refusing to clear non-venv directory: {VENV}", file=sys.stderr)
         return 2, None
@@ -132,12 +148,9 @@ def ensure_bootstrapped():
 
     install_runtime_deps_with_extras(str(py_exe))
 
-    # Place sitecustomize.py into the environment (optional)
-    _install_sitecustomize(str(py_exe))
-
-
     print("Bootstrap complete.")
     return 0, str(py_exe)
 
-# if __name__ == "__main__":
-#     sys.exit(ensure_bootstrapped())
+if __name__ == "__main__":
+    _, exit_code = ensure_bootstrapped()
+    sys.exit(exit_code)

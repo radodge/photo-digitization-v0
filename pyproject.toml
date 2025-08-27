@@ -25,7 +25,6 @@ cpu = ["opencv-python"]
 gpu = [
     "cuda-toolkit[all]",
     "nvidia-cudnn-cu13",
-    "opencv-contrib-python-rolling@file:./opencv_contrib_python_rolling-4.13.0.20250812-cp37-abi3-win_amd64.whl"
 ]
 
 [tool.setuptools.packages.find]

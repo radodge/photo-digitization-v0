@@ -8,6 +8,24 @@ from watchdog.events import FileSystemEventHandler
 from app.processing_utils import *
 from app.gui_utils import *
 
+# --- Runtime feature detection -------------------------------------------------
+def _detect_cuda_enabled() -> bool:
+    """Return True if OpenCV CUDA is present and at least one device is usable.
+
+    Conservative: requires cv2.cuda to exist and device count > 0. Any import or
+    runtime errors are treated as unavailable.
+    """
+    try:
+        import cv2  # local import to avoid hard dependency at module import time
+        if not hasattr(cv2, "cuda"):
+            return False
+        try:
+            return cv2.cuda.getCudaEnabledDeviceCount() > 0
+        except Exception:
+            return False
+    except Exception:
+        return False
+
 class CombinedPhoto:
     """
     A combined photo object is created for each photo that appears in the ingest folder.
@@ -361,10 +379,11 @@ def main():
     Initializes configuration, GUI, and background threads for folder monitoring and photo processing.
     """
     DebugMode = True
+    CUDA_Enabled = False
 
     processing_config = {
         "Debug_Mode": DebugMode,
-        "CUDA_Enabled": False,              # Enable CUDA acceleration (if available)
+        "CUDA_Enabled": _detect_cuda_enabled() and CUDA_Enabled,  # Auto-detect CUDA availability
         "Max_Scanned_Photos": 4,
         "Min_Crop_Margin": 10,              # Crop margin for 0° skew
         "Crop_Margin_Factor": 8,            # Scaling factor to achieve 50 pixels at 5° skew

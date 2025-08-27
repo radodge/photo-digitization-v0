@@ -2,7 +2,6 @@ import subprocess
 import os
 import shutil
 import cv2
-from cv2 import cuda
 import numpy as np
 from PIL import Image
 import pillow_heif
@@ -81,7 +80,7 @@ def load_image_as_numpy_array(file_path: str) -> np.ndarray | None:
         print(f"Failed to load image file {file_path}: {e}")
         return None
 
-def convert_to_grayscale(image, processing_config):
+def convert_to_grayscale(image, processing_config) -> np.ndarray | cv2.cuda.GpuMat:
     """
     Converts an image to grayscale using OpenCV.
 
@@ -96,18 +95,18 @@ def convert_to_grayscale(image, processing_config):
 
     if cuda_enabled:
         # Convert to grayscale using CUDA
-        gpu_image = cuda.GpuMat()
+        gpu_image = cv2.cuda.GpuMat()
         gpu_image.upload(image)
-        gpu_grayscale = cuda.cvtColor(gpu_image, cv2.COLOR_BGR2GRAY)
+        gpu_grayscale = cv2.cuda.cvtColor(gpu_image, cv2.COLOR_BGR2GRAY)
         return gpu_grayscale
     
     else:
         # Convert to grayscale using CPU
         return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-def compute_canny_thresholds(grayscale_image, processing_config):
+def compute_canny_thresholds(grayscale_image, processing_config) -> tuple[int, int]:
     cuda_enabled = processing_config.get("CUDA_Enabled", False)
-    if cuda_enabled and isinstance(grayscale_image, cuda.GpuMat):
+    if cuda_enabled and isinstance(grayscale_image, cv2.cuda.GpuMat):
         # Download the grayscale image from GPU
         grayscale_image = grayscale_image.download()
     
@@ -118,7 +117,7 @@ def compute_canny_thresholds(grayscale_image, processing_config):
     # print(f"Computed Canny thresholds: {T1:.2f}, {T2:.2f}")
     return int(T1), int(T2)
 
-def detect_edges(grayscale_image, processing_config):
+def detect_edges(grayscale_image, processing_config) -> np.ndarray | cv2.cuda.GpuMat:
     """
     Detects edges in a grayscale image using Canny edge detection.
 
@@ -137,11 +136,10 @@ def detect_edges(grayscale_image, processing_config):
 
     canny_thresholds = compute_canny_thresholds(grayscale_image, processing_config)
 
-    if cuda_enabled and isinstance(grayscale_image, cuda.GpuMat):
+    if cuda_enabled and isinstance(grayscale_image, cv2.cuda.GpuMat):
         # Apply Canny edge detection on GPU
         gpu_canny = cv2.cuda.createCannyEdgeDetector(*canny_thresholds, L2gradient=True)
         edges = gpu_canny.detect(grayscale_image)  # Keeps processing in GPU
-
         return edges  # Returns GpuMat
 
     else:
@@ -170,7 +168,7 @@ def old_detect_edges(grayscale_image, processing_config):
     gaussian_kernel = processing_config.get("Gaussian_Kernel", (5, 5))  # Default Gaussian kernel size
     threshold_low, threshold_high = processing_config.get("Canny_Thresholds", (50, 150))
 
-    if cuda_enabled and isinstance(grayscale_image, cuda.GpuMat):
+    if cuda_enabled and isinstance(grayscale_image, cv2.cuda.GpuMat):
         # ✅ Step 1: Compute Laplacian Variance (Noise Detection)
         gpu_image_conv = grayscale_image.convertTo(cv2.CV_32F, alpha=1.0, beta=0.0)
         gpu_laplacian = cv2.cuda.createLaplacianFilter(cv2.CV_32F, cv2.CV_32F, 3)
@@ -196,7 +194,6 @@ def old_detect_edges(grayscale_image, processing_config):
         # ✅ Step 3: Apply Canny Edge Detection
         gpu_canny = cv2.cuda.createCannyEdgeDetector(threshold_low, threshold_high)
         edges = gpu_canny.detect(grayscale_image)  # ✅ Keeps processing in GPU
-
         return edges  # ✅ Returns GpuMat
 
     else:
@@ -238,7 +235,7 @@ def old_detect_edges(grayscale_image, processing_config):
 
     # return canny
 
-def compute_skew_angle(edges, i, processing_config, debug_data=None):
+def compute_skew_angle(edges, i, processing_config, debug_data=None) -> float:
     """
     Computes the skew angle of vertical boundaries for a subphoto using Hough Line Transform,
     focusing on lines near the left and right boundary ranges.
@@ -473,8 +470,8 @@ def detect_horizontal_boundaries_cuda(edges, processing_config, debug_data=None)
     max_theta = np.deg2rad(100)
 
     # Ensure edges are on GPU
-    if not isinstance(edges, cuda.GpuMat):
-        edges_gpu = cuda.GpuMat()
+    if not isinstance(edges, cv2.cuda.GpuMat):
+        edges_gpu = cv2.cuda.GpuMat()
         edges_gpu.upload(edges)
     else:
         edges_gpu = edges
@@ -536,7 +533,7 @@ def detect_horizontal_boundaries_cuda(edges, processing_config, debug_data=None)
 
     return filtered_rows
 
-def detect_horizontal_boundaries(edges, processing_config, debug_data=None):
+def detect_horizontal_boundaries(edges, processing_config, debug_data=None) -> list:
     """
     Detect horizontal boundaries in an edge-detected image, exaggerating peaks in the smoothed projection.
 
@@ -563,7 +560,7 @@ def detect_horizontal_boundaries(edges, processing_config, debug_data=None):
     peak_exaggeration_factor = processing_config.get("Peak_Exaggeration_Factor", 2.0)
     max_scanned_photos = processing_config.get("Max_Scanned_Photos", 6)
 
-    if cuda_enabled and isinstance(edges, cuda.GpuMat):
+    if cuda_enabled and isinstance(edges, cv2.cuda.GpuMat):
         # Download the edge-detected image from GPU
         edges = edges.download()
 
